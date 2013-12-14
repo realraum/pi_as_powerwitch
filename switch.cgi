@@ -22,7 +22,7 @@ done
 
 
 GPIOPATH=/sys/class/gpio/gpio
-VALID_ONOFF_IDS="4 17 18 21 22 23"
+VALID_ONOFF_IDS="4 23 18 17 22 21"
 VALID_SEND_IDS=""
 
 print_gpio_state() {
@@ -56,12 +56,12 @@ if [ "$POWER" = "1" -o "$POWER" = "0" ]; then
   done
 fi
 
-DESC_23="Decke Links Leinwand"
-DESC_4="Decke Rechts Leinwand"
-DESC_18="Decke Eingang Mitte"
-DESC_17="Decke Durchgang Mitte"
-DESC_22="Decke Links Couch"
-DESC_21="Decke Rechts Couch"
+DESC_23="Decke Leinwand (S)"
+DESC_4="Decke E-Labor (SSW)"
+DESC_18="Decke Eingang (W)"
+DESC_17="Decke Durchgang (O)"
+DESC_22="Decke Auslage (N)"
+DESC_21="Decke K&uuml;che (NNO)"
 
 echo "Content-type: text/html"
 echo ""
@@ -205,6 +205,7 @@ for DISPID in $VALID_ONOFF_IDS; do
   fi
 done
 
+#Alle
 echo "<div class=\"switchbox\">"
 echo "<span class=\"alignbuttonsleft\">"
 echo -n " <button class=\"onbutton\" onClick='sendMultiButton(\""
@@ -216,6 +217,21 @@ echo "\");'>Off</button>"
 echo "</span>"
 echo -n "<div class=\"switchnameright\">Alle</div>"
 echo "</div>"
+
+if [ "$NOFLOAT" = "1" ]; then
+  echo "<br/>"
+fi
+
+#Pattern1
+echo "<div class=\"switchbox\">"
+echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"4=0&23=0&18=1&17=1&22=0&21=0\");'>[&nbsp;|&nbsp;]</button>"
+echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"4=1&23=1&18=0&17=0&22=1&21=1\");'>[|&nbsp;|]</button>"
+echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"4=1&23=1&18=0&17=0&22=0&21=1\");'>[|&nbsp;.]</button>"
+echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"4=0&23=1&18=0&17=1&22=0&21=1\");'>[***]</button>"
+echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"4=1&23=0&18=0&17=0&22=0&21=1\");'>[.&nbsp;*]</button>"
+echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"4=0&23=1&18=0&17=0&22=1&21=0\");'>[*&nbsp;.]</button>"
+echo "</div>"
+
 if [ "$NOFLOAT" = "1" ]; then
   echo "<br/>"
 fi

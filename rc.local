@@ -35,5 +35,6 @@ if ! ifconfig eth0 && ifconfig wlan0 ; then
 fi
 
 su realraum -s /bin/sh -c "sleep 10 && /home/realraum/play-sound-status.py /home/realraum/play-sound-status.cfg &>/dev/null &" &
+su realraum -s /bin/sh -c "sleep 10 && /home/realraum/stuff.py &>/dev/null &" &
 
 exit 0
