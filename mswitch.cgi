@@ -1,14 +1,28 @@
 #!/bin/zsh
 
-VALID_ONOFF_IDS=(4 17 18 21 22 23)
+VALID_ONOFF_IDS=(ceiling1 ceiling2 ceiling3 ceiling4 ceiling5 ceiling6)
+VALID_GPIO_IDS=(4 23 18 17 22 21)
+local -A IDGPIOMAP
+local -A GPIOIDMAP
+IDGPIOMAP[ceiling1]=4
+IDGPIOMAP[ceiling2]=23
+IDGPIOMAP[ceiling3]=18
+IDGPIOMAP[ceiling4]=17
+IDGPIOMAP[ceiling5]=22
+IDGPIOMAP[ceiling6]=21
 GPIOPATH=/sys/class/gpio/gpio
+
+for k v in ${(kv)IDGPIOMAP}; do
+  GPIOIDMAP[$v]=$k
+done
+
 local -A GPIOS
 for QUERY in `echo $QUERY_STRING | tr '&' ' '`; do
   for VALIDID in $VALID_ONOFF_IDS; do
     if [ "$QUERY" = "$VALIDID=1" ]; then
-      GPIOS[$VALIDID]=1
+      GPIOS[$IDGPIOMAP[$VALIDID]]=1
     elif [ "$QUERY" = "$VALIDID=0" ]; then
-      GPIOS[$VALIDID]=0
+      GPIOS[$IDGPIOMAP[$VALIDID]]=0
     fi
   done
   if [ "$QUERY" = "mobile=1" ]; then
@@ -21,7 +35,8 @@ done
 
 
 print_gpio_state() {
-  GPIOVALUE=$(cat "${GPIOPATH}${1}/value")
+  GPIO=${IDGPIOMAP[$1]}
+  GPIOVALUE=$(cat "${GPIOPATH}${GPIO}/value")
   if [[ $GPIOVALUE == "0" ]]; then
     echo -n "true"
   else
@@ -30,7 +45,8 @@ print_gpio_state() {
 }
 
 gpio_is_on() {
-  GPIOVALUE=$(cat "${GPIOPATH}${1}/value")
+  GPIO=${IDGPIOMAP[$1]}
+  GPIOVALUE=$(cat "${GPIOPATH}${GPIO}/value")
   [ "$GPIOVALUE" = "0" ]
 }
 
@@ -39,10 +55,10 @@ echo ""
 
 local -a GPIOSTATES
 for CHECKID in $VALID_ONOFF_IDS; do
-  VAL=$GPIOS[$CHECKID]
+  VAL=$GPIOS[$IDGPIOMAP[$CHECKID]]
   if [[ $VAL == 1 || $VAL == 0 ]]; then
     [[ $VAL == 1 ]] && VAL=0 || VAL=1
-    echo "$VAL" > "${GPIOPATH}${CHECKID}/value"
+    echo "$VAL" > "${GPIOPATH}${IDGPIOMAP[$CHECKID]}/value"
   fi
   GPIOSTATES+=(\"${CHECKID}\":"$(print_gpio_state $CHECKID)")
 done

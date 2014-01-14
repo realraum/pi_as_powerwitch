@@ -20,48 +20,15 @@ for QUERY in `echo $QUERY_STRING | tr '&' ' '`; do
   done
 done
 
-
-GPIOPATH=/sys/class/gpio/gpio
-VALID_ONOFF_IDS="4 23 18 17 22 21"
+VALID_ONOFF_IDS="ceiling1 ceiling2 ceiling3 ceiling4 ceiling5 ceiling6"
 VALID_SEND_IDS=""
 
-print_gpio_state() {
-  GPIOVALUE=$(cat "${GPIOPATH}${1}/value")
-  if [ "$GPIOVALUE" = "0" ]; then
-    echo "ON"
-  else
-    echo "Off"
-  fi
-}
-
-gpio_is_on() {
-  GPIOVALUE=$(cat "${GPIOPATH}${1}/value")
-  [ "$GPIOVALUE" = "0" ]
-}
-
-if [ "$POWER" = "1" -o "$POWER" = "0" ]; then
-  for CHECKID in $VALID_ONOFF_IDS ; do
-    if [ "$CHECKID" = "$ID" ]; then
-      [ $POWER = 1 ] && POWER=0 || POWER=1
-      echo "$POWER" > "${GPIOPATH}${ID}/value"
-      echo "Content-type: text/html"
-      echo ""
-      echo "<html>"
-      echo "<head>"
-      echo "<title>Realraum Relay Switch</title>"
-      echo '<script type="text/javascript">window.location="/cgi-bin/switch.cgi";</script>'
-      echo "</head></html>"
-      exit 0
-    fi
-  done
-fi
-
-DESC_23="Decke Leinwand (S)"
-DESC_4="Decke E-Labor (SSW)"
-DESC_18="Decke Eingang (W)"
-DESC_17="Decke Durchgang (O)"
-DESC_22="Decke Auslage (N)"
-DESC_21="Decke K&uuml;che (NNO)"
+DESC_ceiling1="Decke Leinwand (S)"
+DESC_ceiling2 ="Decke E-Labor (SSW)"
+DESC_ceiling3 ="Decke Eingang (W)"
+DESC_ceiling4 ="Decke Durchgang (O)"
+DESC_ceiling5 ="Decke Auslage (N)"
+DESC_ceiling6 ="Decke K&uuml;che (NNO)"
 
 echo "Content-type: text/html"
 echo ""
@@ -105,16 +72,8 @@ echo 'function sendMultiButton( str ) {
 }'
 
 echo 'setInterval("updateButtons(\"/cgi-bin/mswitch.cgi\");", 30*1000);'
+echo 'updateButtons("/cgi-bin/mswitch.cgi");'
 
-echo 'function sendButton( onoff, btn )'
-echo '{'
-echo ' var req = new XMLHttpRequest();'
-echo ' url = "/cgi-bin/switch.cgi?power="+onoff+"&id="+btn;'
-echo ' req.open("GET", url ,false);'
-echo ' //google chrome workaround'
-echo ' req.setRequestHeader("googlechromefix","");'
-echo ' req.send(null);'
-echo '}'
 echo '</script>'
 echo '<style>'
 echo 'div.switchbox {'
@@ -243,22 +202,6 @@ echo "<div style=\"float:left; border:1px solid black; margin-right:2ex; margin-
 
 ITEMCOUNT=0
 
-for DISPID in $VALID_SEND_IDS; do
-  ITEMCOUNT=$((ITEMCOUNT+1))
-  NAME="$(eval echo \$DESC_$DISPID)"
-  [ -z "$NAME" ] && NAME=$DISPID
-
-  echo "<div class=\"switchbox\">"
-  echo "<span class=\"alignbuttonsleft\">"
-  echo " <button class=\"sendbutton\" onClick='sendButton(\"on\",\"$DISPID\");'> </button>"
-  echo "</span>"
-  echo "<div class=\"switchnameright\">$NAME</div>"
-  echo "</div>"
-  if [ "$NOFLOAT" = "1" -a $((ITEMCOUNT % 2 )) -ne 1 ]; then
-    echo "<br/>"
-  fi
-
-done
 echo "</div>"
 fi
 echo "</div>"
