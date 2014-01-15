@@ -23,8 +23,8 @@ done
 VALID_ONOFF_IDS="ceiling1 ceiling2 ceiling3 ceiling4 ceiling5 ceiling6"
 VALID_SEND_IDS=""
 
-DESC_ceiling1="Decke Leinwand (S)"
-DESC_ceiling2="Decke E-Labor (SSW)"
+DESC_ceiling1="Decke E-Labor (SSW)"
+DESC_ceiling2="Decke Leinwand (S)"
 DESC_ceiling3="Decke Eingang (W)"
 DESC_ceiling4="Decke Durchgang (O)"
 DESC_ceiling5="Decke Auslage (N)"
