@@ -11,6 +11,7 @@ IDGPIOMAP[ceiling4]=17
 IDGPIOMAP[ceiling5]=22
 IDGPIOMAP[ceiling6]=21
 GPIOPATH=/sys/class/gpio/gpio
+SAVESTATE=/var/log/licht/mswitch.state
 
 for k v in ${(kv)IDGPIOMAP}; do
   GPIOIDMAP[$v]=$k
@@ -44,6 +45,16 @@ print_gpio_state() {
   fi
 }
 
+print_gpio_state_10() {
+  GPIO=${IDGPIOMAP[$1]}
+  GPIOVALUE=$(cat "${GPIOPATH}${GPIO}/value")
+  if [[ $GPIOVALUE == "0" ]]; then
+    echo -n "1"
+  else
+    echo -n "0"
+  fi
+}
+
 gpio_is_on() {
   GPIO=${IDGPIOMAP[$1]}
   GPIOVALUE=$(cat "${GPIOPATH}${GPIO}/value")
@@ -61,9 +72,12 @@ for CHECKID in $VALID_ONOFF_IDS; do
     echo "$VAL" > "${GPIOPATH}${IDGPIOMAP[$CHECKID]}/value"
   fi
   GPIOSTATES+=(\"${CHECKID}\":"$(print_gpio_state $CHECKID)")
+  URISTATES+=("${CHECKID}=$(print_gpio_state_10 $CHECKID)")
 done
 JSON_STATE="{${(j:,:)GPIOSTATES}}"
 print ${(q)JSON_STATE}
 if ((#GPIOS > 0)); then
   print "[$(date +%s),\"$REMOTE_ADDR\",${(q)JSON_STATE}]," >> /var/log/licht/mswitch.log
+  echo -n "${(j:&:)URISTATES}">$SAVESTATE
 fi
+

@@ -183,12 +183,12 @@ fi
 
 #Pattern1
 echo "<div class=\"switchbox\">"
-echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"4=0&23=0&18=1&17=1&22=0&21=0\");'>[&nbsp;|&nbsp;]</button>"
-echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"4=1&23=1&18=0&17=0&22=1&21=1\");'>[|&nbsp;|]</button>"
-echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"4=1&23=1&18=0&17=0&22=0&21=1\");'>[|&nbsp;.]</button>"
-echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"4=0&23=1&18=0&17=1&22=0&21=1\");'>[***]</button>"
-echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"4=1&23=0&18=0&17=0&22=0&21=1\");'>[.&nbsp;*]</button>"
-echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"4=0&23=1&18=0&17=0&22=1&21=0\");'>[*&nbsp;.]</button>"
+echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"ceiling1=0&ceiling2=0&ceiling3=1&ceiling4=1&ceiling5=0&ceiling6=0\");'>[&nbsp;|&nbsp;]</button>"
+echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"ceiling1=1&ceiling2=1&ceiling3=0&ceiling4=0&ceiling5=1&ceiling6=1\");'>[|&nbsp;|]</button>"
+echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"ceiling1=1&ceiling2=0&ceiling3=0&ceiling4=0&ceiling5=1&ceiling6=1\");'>[|&nbsp;.]</button>"
+echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"ceiling1=0&ceiling2=1&ceiling3=0&ceiling4=1&ceiling5=0&ceiling6=1\");'>[***]</button>"
+echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"ceiling1=1&ceiling2=0&ceiling3=0&ceiling4=0&ceiling5=0&ceiling6=1\");'>[*&nbsp;.]</button>"
+echo -n " <button class=\"sendbutton\" onClick='sendMultiButton(\"ceiling1=0&ceiling2=0&ceiling3=0&ceiling4=0&ceiling5=1&ceiling6=1\");'>[|&nbsp;&nbsp;]</button>"
 echo "</div>"
 
 if [ "$NOFLOAT" = "1" ]; then

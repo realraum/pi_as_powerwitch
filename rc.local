@@ -1,40 +1,41 @@
-#!/bin/sh -e
-#
-# rc.local
-#
-# This script is executed at the end of each multiuser runlevel.
-# Make sure that the script will "exit 0" on success or any other
-# value on error.
-#
-# In order to enable or disable this script just change the execution
-# bits.
-#
-# By default this script does nothing.
-
-for gpio in 4 17 18 21 22 23; do
- echo $gpio > /sys/class/gpio/export
- echo out > /sys/class/gpio/gpio$gpio/direction
- chown www-data /sys/class/gpio/gpio$gpio/value
-done
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          rc.local
+# Required-Start:    $all
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:
+# Short-Description: Run /etc/rc.local if it exist
+### END INIT INFO
 
 
-# Print the IP address
-_IP=$(hostname -I) || true
-if [ "$_IP" ]; then
-  printf "My IP address is %s\n" "$_IP"
-fi
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
 
-MAX_TRIES=20
-if ! ifconfig eth0 && ifconfig wlan0 ; then
-  sleep 6
-  while ((MAX_TRIES-- > 0)) && ! /sbin/wpa_cli status | grep -q wpa_state=COMPLETED; do
-    /sbin/wpa_cli status
-    ifdown wlan0
-    ifup wlan0
-  done
-fi
+. /lib/init/vars.sh
+. /lib/lsb/init-functions
 
-su realraum -s /bin/sh -c "sleep 10 && /home/realraum/play-sound-status.py /home/realraum/play-sound-status.cfg &>/dev/null &" &
-su realraum -s /bin/sh -c "sleep 10 && /home/realraum/stuff.py &>/dev/null &" &
+do_start() {
+	if [ -x /etc/rc.local ]; then
+	        [ "$VERBOSE" != no ] && log_begin_msg "Running local boot scripts (/etc/rc.local)"
+		/etc/rc.local
+		ES=$?
+		[ "$VERBOSE" != no ] && log_end_msg $ES
+		return $ES
+	fi
+}
 
-exit 0
+case "$1" in
+    start)
+	do_start
+        ;;
+    restart|reload|force-reload)
+        echo "Error: argument '$1' not supported" >&2
+        exit 3
+        ;;
+    stop)
+        ;;
+    *)
+        echo "Usage: $0 start|stop" >&2
+        exit 3
+        ;;
+esac
