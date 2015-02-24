@@ -15,8 +15,6 @@ import traceback
 import random
 import zmq
 import zmq.utils.jsonapi as json
-import urllib
-import ephem
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -26,21 +24,23 @@ logger.addHandler(lh_syslog)
 lh_stderr = logging.StreamHandler()
 logger.addHandler(lh_stderr)
 
-def isTheSunDown():
-    ephemobs=ephem.Observer()
-    ephemobs.lat='47.06'
-    ephemobs.lon='15.45'
-    ephemsun=ephem.Sun()
-    ephemsun.compute()
-    return ephemobs.date > ephemobs.previous_setting(ephemsun) and ephemobs.date < ephemobs.next_rising(ephemsun)
-
-
 class UWSConfig:
   def __init__(self,configfile=None):
     self.configfile=configfile
     self.config_parser=ConfigParser.ConfigParser()
     #make option variable names case sensitive
     self.config_parser.optionxform = str
+    self.config_parser.add_section('cmdlog')
+    self.config_parser.set('cmdlog','cmd',"logger %ARG%")
+    self.config_parser.set('cmdlog','timeout',"2.0")
+    self.config_parser.set('cmdlog','delay',"0.0")
+    self.config_parser.set('cmdlog','type',"shellcmd")
+    self.config_parser.add_section('nothing')
+    self.config_parser.set('nothing','type',"nothing")
+    self.config_parser.add_section('mapping')
+    self.config_parser.set('mapping','DEFAULT',"nothing")
+    self.config_parser.set('mapping','PANIC',"nothing")
+    self.config_parser.set('mapping','ERROR',"nothing")
     self.config_parser.add_section('debug')
     self.config_parser.set('debug','enabled',"False")
     self.config_parser.add_section('broker')
@@ -262,19 +262,6 @@ def decodeR3Message(multipart_msg):
         logging.debug("decodeR3Message:"+str(e))
         return ("",{})
 
-
-def touchURL(url):
-  try:
-    f = urllib.urlopen(url)
-    rq_response = f.read()
-    logging.debug("touchURL: url: "+url)
-    #logging.debug("touchURL: Response "+rq_response)
-    f.close()
-    return rq_response
-  except Exception, e:
-    logging.error("touchURL: "+str(e))
-
-
 def exitHandler(signum, frame):
   logging.info("stopping")
   try:
@@ -323,21 +310,29 @@ while True:
       #uwscfg.checkConfigUpdates()
 
       if structname == "PresenceUpdate" and "Present" in dictdata:
-        if dictdata["Present"] and last_status != dictdata["Present"]:
-          #someone just arrived
-          #power to labortisch so people can switch on the individual lights (and switch off after everybody leaves)
-	  #boiler always on when someone is here
-          touchURL("http://localhost/cgi-bin/mswitch.cgi?labortisch=1&cxleds=1&boiler=1")
-          if isTheSunDown():
-            touchURL("http://localhost/cgi-bin/mswitch.cgi?ceiling3=1&ceiling4=1&couchred=1&bluebar=1")
+        unixts_last_presence=time.time()
         last_status=dictdata["Present"]
-        if not last_status:
-          #everybody left
-          touchURL("http://localhost/cgi-bin/mswitch.cgi?all=0&ceiling1=0&ceiling2=0&ceiling3=0&ceiling4=0&ceiling5=0&ceiling6=0")
-	  time.sleep(2)
-          touchURL("http://slug.realraum.at/cgi-bin/switch.cgi?power=off&id=all")
-          touchURL("http://localhost/cgi-bin/mswitch.cgi?ceiling1=0&ceiling2=0&ceiling3=0&ceiling4=0&ceiling5=0&ceiling6=0")
-          touchURL("http://localhost/cgi-bin/mswitch.cgi?all=0&ceiling1=0&ceiling2=0&ceiling3=0&ceiling4=0&ceiling5=0&ceiling6=0")
+        unixts_panic_button=None
+        if ( time.time() - unixts_last_movement ) <= float(uwscfg.tracker_secs_movement_before_presence_to_launch_event):
+          unixts_last_movement=0
+          if last_status:
+            playThemeOf(user=last_user, fallback_default="DEFAULT")
+        continue
+      elif structname == "DoorCommandEvent":
+        last_user = dictdata["Who"]
+        continue
+      elif structname == "BoreDoomButtonPressEvent":
+        playThemeOf(user="PANIC", fallback_default="nothing")
+        continue
+      elif structname == "MovementSensorUpdate" or structname == "DoorAjarUpdate":
+        unixts_last_movement=time.time()
+        if (time.time() - unixts_last_presence) <= float(uwscfg.tracker_secs_presence_before_movement_to_launch_event):
+          unixts_last_presence=0
+          if last_status:
+            playThemeOf(user=last_user, fallback_default="DEFAULT")
+        continue
+      elif structname == "DoorProblemEvent" and "Severity" in dictdata:
+        playThemeOf(user="ERROR", fallback_default="nothing")
         continue
 
   except Exception, ex:
