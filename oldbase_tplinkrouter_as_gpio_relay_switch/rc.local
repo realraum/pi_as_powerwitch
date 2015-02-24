@@ -1,0 +1,14 @@
+# Put your custom commands here that should be executed once
+# the system init finished. By default this file does nothing.
+
+rmmod gpio_button_hotplug
+echo 7 > /sys/class/gpio/export
+echo 18 > /sys/class/gpio/export
+echo 20 > /sys/class/gpio/export
+echo 29 > /sys/class/gpio/export
+echo out > /sys/class/gpio/gpio7/direction
+echo out > /sys/class/gpio/gpio18/direction
+echo out > /sys/class/gpio/gpio20/direction
+echo out > /sys/class/gpio/gpio29/direction
+
+exit 0
